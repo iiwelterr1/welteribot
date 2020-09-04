@@ -4,13 +4,12 @@
 const { Client, Collection } = require("discord.js");
 const { readdirSync } = require("fs");
 const { join } = require("path");
-const { TOKEN, PREFIX } = require("./config.json");
+
 
 const client = new Client({ disableMentions: "everyone" });
 
-client.login(TOKEN);
+client.login(process.env.TOKEN);
 client.commands = new Collection();
-client.prefix = PREFIX;
 client.queue = new Map();
 const cooldowns = new Collection();
 const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -20,7 +19,7 @@ const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
  */
 client.on("ready", () => {
   console.log(`${client.user.username} ready!`);
-  client.user.setActivity(`${PREFIX}help`);
+  client.user.setActivity(`help`);
 });
 client.on("warn", (info) => console.log(info));
 client.on("error", console.error);
@@ -38,12 +37,11 @@ client.on("message", async (message) => {
   if (message.author.bot) return;
   if (!message.guild) return;
 
-  const prefixRegex = new RegExp(`^(<@!?${client.user.id}>|${escapeRegex(PREFIX)})\\s*`);
-  if (!prefixRegex.test(message.content)) return;
+  
 
-  const [, matchedPrefix] = message.content.match(prefixRegex);
 
-  const args = message.content.slice(matchedPrefix.length).trim().split(/ +/);
+
+  const args = message.content.split(/ +/);
   const commandName = args.shift().toLowerCase();
 
   const command =
