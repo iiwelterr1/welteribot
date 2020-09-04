@@ -8,26 +8,26 @@ const scdl = require("soundcloud-downloader");
 module.exports = {
   name: "play",
   cooldown: 3,
-  aliases: ["p"],
-  description: "Plays audio from YouTube or Soundcloud",
+  aliases: ["p", "شغل"],
+  description: "تشغل اغاني من اليوتيوب او الساوند كلاود",
   async execute(message, args) {
     const { channel } = message.member.voice;
 
     const serverQueue = message.client.queue.get(message.guild.id);
-    if (!channel) return message.reply("You need to join a voice channel first!").catch(console.error);
+    if (!channel) return message.reply("`ما فيه اغنية تشتغل الحين .`").catch(console.error);
     if (serverQueue && channel !== message.guild.me.voice.channel)
-      return message.reply(`You must be in the same channel as ${message.client.user}`).catch(console.error);
+      return message.reply(`لازم تكون في نفس الروم مع البوت ! ${message.client.user}`).catch(console.error);
 
     if (!args.length)
       return message
-        .reply(`Usage: ${message.client.prefix}play <YouTube URL | Video Name | Soundcloud URL>`)
+        .reply(`استخدم : ${message.client.prefix}p <رابط الاغنية | اسم الاغنية | رابط الساوند كلاود>`)
         .catch(console.error);
 
     const permissions = channel.permissionsFor(message.client.user);
     if (!permissions.has("CONNECT"))
-      return message.reply("Cannot connect to voice channel, missing permissions");
+      return message.reply("`ما عندي  صلاحيات اني ادخل`");
     if (!permissions.has("SPEAK"))
-      return message.reply("I cannot speak in this voice channel, make sure I have the proper permissions!");
+      return message.reply("`ما عندي صلاحيات اني اتكلم `");
 
     const search = args.join(" ");
     const videoPattern = /^(https?:\/\/)?(www\.)?(m\.)?(youtube\.com|youtu\.?be)\/.+$/gi;
@@ -38,8 +38,6 @@ module.exports = {
 
     // Start the playlist if playlist url was provided
     if (!videoPattern.test(args[0]) && playlistPattern.test(args[0])) {
-      return message.client.commands.get("playlist").execute(message, args);
-    } else if (scdl.isValidUrl(url) && url.includes("/sets/")) {
       return message.client.commands.get("playlist").execute(message, args);
     }
 
@@ -74,7 +72,7 @@ module.exports = {
         song = {
           title: trackInfo.title,
           url: trackInfo.permalink_url,
-          duration: Math.ceil(trackInfo.duration / 1000)
+          duration: trackInfo.duration / 1000
         };
       } catch (error) {
         if (error.statusCode === 404)
@@ -92,14 +90,14 @@ module.exports = {
         };
       } catch (error) {
         console.error(error);
-        return message.reply("No video was found with a matching title").catch(console.error);
+        return message.reply("`اكتب اسم الاغنية وحاول من جديد .`").catch(console.error);
       }
     }
 
     if (serverQueue) {
       serverQueue.songs.push(song);
       return serverQueue.textChannel
-        .send(`✅ **${song.title}** has been added to the queue by ${message.author}`)
+        .send(`✅ **${song.title}** انضافت الى قائمة الانتظار  by : ${message.author}`)
         .catch(console.error);
     }
 
